@@ -1,0 +1,95 @@
+{
+  "uri": "radio://0/80/2M/E7E7E7E7E7",
+  "mode": "auto",
+  "input": "auto",
+  "language": "ru",
+  "fullscreen": false,
+  "flight": {
+    "takeoff_height": 0.5,
+    "min_height": 0.2,
+    "max_height": 1.5,
+    "takeoff_speed": 0.4,
+    "land_speed": 0.3,
+    "max_speed": 0.5,
+    "climb_rate": 0.4,
+    "max_yaw_rate": 90.0,
+    "max_angle": 15.0,
+    "arm_delay": 1.0,
+    "thrust_min": 10001,
+    "thrust_max": 50000,
+    "land_thrust_ramp": 4.0,
+    "hover_throttle_deadzone": 0.1,
+    "max_acro_rate": 90.0,
+    "acro_expo": 0.6,
+    "acro_acceleration": 240.0,
+    "flip_rate": 720.0,
+    "flip_angle": 360.0,
+    "flip_boost_time": 0.2,
+    "flip_boost": 1.35,
+    "flip_spin_thrust": 0.6,
+    "flip_recover_time": 0.4,
+    "dash_angle": 45.0,
+    "dash_boost": 1.3,
+    "dash_rate": 450.0
+  },
+  "keyboard": {
+    "throttle_rate": 0.6
+  },
+  "joystick": {
+    "name_filter": "",
+    "axes": {
+      "roll": 2,
+      "pitch": 3,
+      "throttle": 1,
+      "yaw": null
+    },
+    "invert": {
+      "roll": false,
+      "pitch": true,
+      "throttle": true,
+      "yaw": false
+    },
+    "deadzone": 0.05,
+    "expo": 0.3,
+    "bindings": {
+      "takeoff": {
+        "button": 0
+      },
+      "land": {
+        "button": 2
+      },
+      "kill": {
+        "button": 3
+      },
+      "hold": {
+        "button": 1
+      },
+      "yaw_left": {
+        "button": 9
+      },
+      "yaw_right": {
+        "button": 10
+      },
+      "flip_forward": {
+        "button": 11
+      },
+      "flip_backward": {
+        "button": 12
+      },
+      "flip_left": {
+        "button": 13
+      },
+      "flip_right": {
+        "button": 14
+      },
+      "dash_backward": {
+        "axis": 4,
+        "above": 0.5
+      },
+      "dash_forward": {
+        "axis": 5,
+        "above": 0.5
+      }
+    }
+  }
+}

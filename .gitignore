@@ -1,0 +1,13 @@
+# окружение и сборка
+.venv/
+build/
+dist/
+cache/
+__pycache__/
+*.pyc
+
+# тесты
+.pytest_*/
+.pytest_cache/
+.coverage
+htmlcov/

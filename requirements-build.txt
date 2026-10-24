@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# только для сборки установщика (build.bat)
+pyinstaller==6.22.3
