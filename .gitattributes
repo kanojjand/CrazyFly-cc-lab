@@ -1,0 +1,3 @@
+# Скрипты для Mac/Linux — всегда с LF, иначе sh их не запустит
+*.sh text eol=lf
+android/gradlew text eol=lf

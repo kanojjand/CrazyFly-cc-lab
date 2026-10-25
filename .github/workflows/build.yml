@@ -1,0 +1,75 @@
+# Сборка всех версий: Windows (.exe), macOS (.app, Apple Silicon), Android (.apk). Тесты - перед каждой сборкой.
+# Тег v* (например, v1.1) - ещё и выкладывает файлы в GitHub Releases.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-build.txt
+      - run: python -m pytest -q
+      - run: python -m PyInstaller --noconfirm --clean --log-level WARN --distpath dist --workpath build installer/CrazyflyPilot.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/CC Lab CrazyFly.exe
+
+  mac:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-build.txt pillow
+      - run: python -m pytest -q
+      - run: python -m PyInstaller --noconfirm --clean --log-level WARN --distpath dist --workpath build installer/CrazyflyPilot-mac.spec
+      - run: ditto -c -k --keepParent "dist/CC Lab CrazyFly.app" "dist/CC-Lab-CrazyFly-mac.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: dist/CC-Lab-CrazyFly-mac.zip
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: chmod +x gradlew
+      - run: ./gradlew testDebugUnitTest assembleDebug --no-daemon
+      - run: cp app/build/outputs/apk/debug/app-debug.apk CC-Lab-CrazyFly.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: android/CC-Lab-CrazyFly.apk
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, mac, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/**/*

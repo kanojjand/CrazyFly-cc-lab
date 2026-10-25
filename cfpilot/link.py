@@ -413,7 +413,7 @@ class CrazyflieLink:
     @property
     def rate_ready(self) -> bool:
         """Прошивка понимает крен/тангаж как угловые скорости — можно крутить сальто."""
-        return self._rate_mode is True
+        return self._rate_mode is True and self._rate_requested is True
 
     @property
     def failsafe_stopped(self) -> bool:
@@ -483,17 +483,21 @@ class CrazyflieLink:
             return setpoint
         cf = self._scf.cf
         try:
-            if self._rate_requested != setpoint.rate:
+            confirmed = _firmware_rate(cf)
+            if confirmed is not None:
+                self._rate_mode = confirmed
+            # Новый режим пишем, только когда прошлая запись подтверждена: иначе неизвестно, какая из двух
+            # уже применена в прошивке, и «подтверждённый» режим мог бы оказаться устаревшим.
+            settled = confirmed == self._rate_requested
+            if settled and setpoint.rate != self._rate_requested:
                 for name in RATE_PARAMS:
                     cf.param.set_value(name, _stab_mode(setpoint.rate))
                 self._rate_requested = setpoint.rate
-            confirmed = _firmware_rate(cf)
+                settled = False
         except (KeyError, AttributeError) as error:
             log.warning("Не удалось сменить режим крена/тангажа: %s", error)
-            confirmed = None
-        if confirmed is not None:
-            self._rate_mode = confirmed
-        if confirmed == setpoint.rate:
+            settled = False
+        if settled and self._rate_mode == setpoint.rate:
             return setpoint
         return replace(setpoint, roll=0.0, pitch=0.0, rate=self._rate_mode)
 

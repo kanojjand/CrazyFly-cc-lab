@@ -8,9 +8,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import traceback
@@ -90,12 +92,19 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def settings_root(platform: str = sys.platform) -> Path:
+    """Папка для настроек программ: Windows — %APPDATA%, macOS — ~/Library/Application Support."""
+    if platform == "darwin":
+        return Path.home() / "Library" / "Application Support"
+    return Path(os.environ.get("APPDATA", str(Path.home())))
+
+
 def data_dir() -> Path:
-    """Где config.json и кэш: из исходников — рядом с main.py, у .exe — в %APPDATA%
-    (рядом с .exe писать можно не всегда, а трим и раскладки пультов сохраняются в config.json)."""
+    """Где config.json и кэш: из исходников — рядом с main.py, у .exe / .app — в папке настроек пользователя
+    (рядом с программой писать можно не всегда, а трим и раскладки пультов сохраняются в config.json)."""
     if not FROZEN:
         return ROOT
-    folder = Path(os.environ.get("APPDATA", str(Path.home()))) / APP_FOLDER
+    folder = settings_root() / APP_FOLDER
     folder.mkdir(parents=True, exist_ok=True)
     config = folder / "config.json"
     if not config.exists():
@@ -104,6 +113,14 @@ def data_dir() -> Path:
 
 
 def _message_box(message: str) -> None:
+    if sys.platform == "darwin":
+        # Строки AppleScript понимают те же \" и \n, что JSON; кириллицу оставляем как есть.
+        title, text = json.dumps(WINDOW_TITLE, ensure_ascii=False), json.dumps(message, ensure_ascii=False)
+        script = f"display alert {title} message {text} as critical"
+        subprocess.run(["osascript", "-e", script], check=False)
+        return
+    if sys.platform != "win32":
+        return  # остальным системам хватает текста в консоли
     import ctypes
 
     ctypes.windll.user32.MessageBoxW(None, message, WINDOW_TITLE, MB_ICONERROR)

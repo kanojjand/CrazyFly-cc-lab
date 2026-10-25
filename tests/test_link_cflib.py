@@ -457,3 +457,27 @@ def test_flip_switches_firmware_to_rates_in_flight_and_back(fake_cflib):
     assert not link.rate_ready
     cf.commander.send_setpoint.assert_called_with(0.0, 5.0, 0.0, 30000)
     link.close()
+
+
+def test_new_mode_is_written_only_after_previous_write_is_confirmed(fake_cflib):
+    """Сальто сразу после сальто: пока «назад в углы» не подтверждено, ни скорости, ни новой записи."""
+    link, _, cf = connected(fake_cflib)
+    store = {**PARAMS, "flightmode.althold": "0", "flightmode.poshold": "0", "flightmode.posSet": "0",
+             "flightmode.stabModeRoll": "0", "flightmode.stabModePitch": "0", "flightmode.stabModeYaw": "0"}
+    written = []
+    cf.param.get_value.side_effect = lambda name: store[name]
+    cf.param.set_value.side_effect = lambda name, value: written.append((name, value))
+    link.execute(Output(AttitudeSetpoint(0.0, 0.0, 0.0, 0, rate=True), (Action.ARM,)))  # уже в скоростях
+    written.clear()
+    link.execute(Output(AttitudeSetpoint(0.0, 0.0, 0.0, 30000)))  # выравнивание: просим углы
+    assert {value for _, value in written} == {"1"}
+    written.clear()
+    spin = AttitudeSetpoint(0.0, 720.0, 0.0, 30000, rate=True)
+    link.execute(Output(spin))  # углы ещё не подтверждены, а сальто снова просит скорости
+    assert written == [] and not link.rate_ready
+    cf.commander.send_setpoint.assert_called_with(0.0, 0.0, 0.0, 30000)
+    store.update({"flightmode.stabModeRoll": "1", "flightmode.stabModePitch": "1"})  # углы подтвердились
+    link.execute(Output(spin))
+    assert {value for _, value in written} == {"0"}  # только теперь — обратно в скорости
+    cf.commander.send_setpoint.assert_called_with(0.0, 0.0, 0.0, 30000)
+    link.close()

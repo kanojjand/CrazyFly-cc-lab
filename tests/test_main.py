@@ -1,5 +1,6 @@
 import os
 from dataclasses import replace
+from pathlib import Path
 from types import SimpleNamespace
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -144,9 +145,15 @@ def test_source_run_keeps_settings_next_to_main(monkeypatch):
     assert main.data_dir() == main.ROOT
 
 
+def test_settings_live_in_appdata_on_windows_and_application_support_on_mac(tmp_path, monkeypatch):
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+    assert main.settings_root("win32") == tmp_path
+    assert main.settings_root("darwin") == Path.home() / "Library" / "Application Support"
+
+
 def test_installed_app_keeps_settings_in_appdata(tmp_path, monkeypatch):
     monkeypatch.setattr(main, "FROZEN", True)
-    monkeypatch.setenv("APPDATA", str(tmp_path))
+    monkeypatch.setattr(main, "settings_root", lambda: tmp_path)
     folder = main.data_dir()
     assert folder == tmp_path / main.APP_FOLDER
     assert load_config(str(folder / "config.json")) == load_config(str(main.BUNDLE / "config.json"))
@@ -312,3 +319,12 @@ def test_forced_mode_without_decks_is_explained(monkeypatch, tmp_path):
     config = replace(AppConfig(), mode="hover")
     assert main.fly(config, use_sim=False, config_path=str(tmp_path / "config.json")) == 1
     assert shown == ["Неподходящий режим"]
+
+
+def test_fatal_error_on_mac_uses_system_alert(monkeypatch):
+    calls = []
+    monkeypatch.setattr(main.sys, "platform", "darwin")
+    monkeypatch.setattr(main.subprocess, "run", lambda args, check: calls.append(args))
+    main._message_box('Нет "радио"\nвставь')
+    assert calls[0][:2] == ["osascript", "-e"]
+    assert r'message "Нет \"радио\"\nвставь" as critical' in calls[0][2]

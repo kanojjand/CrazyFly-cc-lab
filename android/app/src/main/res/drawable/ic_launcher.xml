@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Значок: квадрокоптер сверху — четыре винта и корпус -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="#0B0B0C" android:pathData="M0,0h48v48h-48z" />
+    <path android:strokeColor="#E8E8E8" android:strokeWidth="3" android:pathData="M14,14L34,34M34,14L14,34" />
+    <path android:fillColor="#7BE0A8" android:pathData="M24,24m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+    <path android:strokeColor="#E8E8E8" android:strokeWidth="2" android:pathData="M12,12m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path android:strokeColor="#E8E8E8" android:strokeWidth="2" android:pathData="M36,12m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path android:strokeColor="#E8E8E8" android:strokeWidth="2" android:pathData="M12,36m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path android:strokeColor="#E8E8E8" android:strokeWidth="2" android:pathData="M36,36m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+</vector>
